@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour
 {
-    private Ground groundManager;
+     Ground groundManager;
 
     void Start()
     {
@@ -14,10 +14,9 @@ public class Tile : MonoBehaviour
     // When the player exits the trigger, recycle the tile
     private void OnTriggerExit(Collider other)
     {
-        if (other.CompareTag("Player"))
-        {
+            groundManager.SpawnTileSet();
             // Recycle the tile when the player exits its trigger
-            groundManager.RecycleTile(gameObject);
-        }
+           // groundManager.RecycleTile(gameObject);
+            Destroy(gameObject, 2);
     }
 }

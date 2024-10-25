@@ -17,9 +17,12 @@ public class Ground : MonoBehaviour
     // Lanes based on x positions
     private float[] lanePositions = { -5f, 0f, 5f };
 
+    private float tileLength = 10f; // Length of each tile along the Z-axis
+
     // Start is called before the first frame update
     void Start()
     {
+        nextSpawnPoint = transform.position; // Initialize the starting position
         // Initialize the ground tiles
         for (int i = 0; i < initialTileCount; i++)
         {
@@ -28,15 +31,16 @@ public class Ground : MonoBehaviour
     }
 
     // Spawns a set of three adjacent tiles (one for each lane)
-    void SpawnTileSet()
+    public void SpawnTileSet()
     {
+        // Loop through each lane and spawn tiles
         for (int i = 0; i < lanePositions.Length; i++)
         {
             SpawnTileOrColored(lanePositions[i]);
         }
 
-        // Update the next spawn point along the Z-axis for the next row of tiles
-        nextSpawnPoint += new Vector3(0f, 0f, tilePrefab.transform.localScale.z);
+        // Move the next spawn point forward along the Z-axis for the next set
+        nextSpawnPoint.z += tileLength; // Increment by tile length to avoid overlap
     }
 
     // Spawns either a ground tile or a colored tile on a specific lane
@@ -46,7 +50,7 @@ public class Ground : MonoBehaviour
 
         // 30% chance to spawn a red or green tile instead of a ground tile
         float chance = random.Next(0, 100); 
-        if (chance < 5f) // 30% chance to spawn a colored tile
+        if (chance < 30f) // 30% chance to spawn a colored tile
         {
             // Spawn a red or green tile at the specified lane
             newTile = SpawnColoredTile(laneXPosition);
@@ -57,7 +61,7 @@ public class Ground : MonoBehaviour
             newTile = SpawnGroundTile(laneXPosition);
         }
         
-        // Place the tile at the next Z position and at the correct lane (X position)
+        // Position the tile at the correct lane (X position) and Z position
         newTile.transform.position = new Vector3(laneXPosition, nextSpawnPoint.y, nextSpawnPoint.z);
     }
 
@@ -67,7 +71,7 @@ public class Ground : MonoBehaviour
         GameObject newTile;
 
         // Reuse ground tiles from the pool if available
-        if (tileQueue.Count > 0)
+        if (tileQueue.Count > 5)
         {
             newTile = tileQueue.Dequeue();
             newTile.SetActive(true); // Reactivate the tile
@@ -75,7 +79,7 @@ public class Ground : MonoBehaviour
         else
         {
             // Instantiate a new ground tile if no reusable ones are available
-            newTile = Instantiate(tilePrefab, nextSpawnPoint, Quaternion.identity);
+            newTile = Instantiate(tilePrefab);
         }
 
         return newTile;
@@ -96,7 +100,7 @@ public class Ground : MonoBehaviour
         else
         {
             // Instantiate a new colored tile if no reusable ones are available
-            newTile = Instantiate(tileToSpawnPrefab, nextSpawnPoint, Quaternion.identity);
+            newTile = Instantiate(tileToSpawnPrefab);
         }
 
         // Ensure the tile has the correct width (since it's one lane wide)
@@ -122,8 +126,8 @@ public class Ground : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // Continuously spawn new sets of tiles as needed
-        if (Vector3.Distance(Camera.main.transform.position, nextSpawnPoint) < 20f)
+        // Continuously spawn new sets of tiles if the next spawn point is close enough
+        if (Vector3.Distance(Camera.main.transform.position, nextSpawnPoint) < 30f)
         {
             SpawnTileSet(); // Spawn a new row of three adjacent tiles
         }
